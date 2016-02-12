@@ -1,0 +1,7 @@
+*.iml
+.idea/
+*.mp3
+*.flac
+
+# recources for tests
+test/
