@@ -4,4 +4,4 @@
 *.flac
 
 # recources for tests
-test/
+test_*/
