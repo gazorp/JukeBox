@@ -14,7 +14,7 @@ COVERS = (
     'COVER.JPG', 'COVER.JPEG', 'FOLDER.JPG', 'FOLDER.JPEG'
 )
 
-ALB_PATTERN = '{year} - {title}'
+ALBUM_PATTERN = '{year} - {title}'
 BAND_PATTERN = '{title}'
 TRACK_PATTERN = '{number} - {title}'
 
@@ -24,14 +24,15 @@ COLLECT_DIR = os.path.join(BASE_DIR, 'collection')
 
 
 class JukeBox(object):
-    """ Finds all music files in path & structures them using by tags
-    """
+
     def __init__(self, path):
         self.path = path
         self.collection = {}
 
     def make_collection(self):
-        """ Find all music files in self.path & sort them by band
+        """
+        Find all .mp3/.flac in self.path and write to self.collection
+        separated by artists
         """
         for top, dirs, files in os.walk(self.path):
             for f in files:
@@ -41,15 +42,16 @@ class JukeBox(object):
                     self.collection[track.artist].append(track)
 
         if not self.collection:
-            raise Exception('There is no music files in this folder\nCollection is empty')
+            raise Exception('There is no music files in folder')
 
     def find_album_cover(self, tracklist):
         """
         Try to find album cover and move it to new folder
 
-        :param tracklist: list of TinyTag objects of album
-
         If tracks now located in one place, try to find cover file.
+
+        :param tracklist: list of TinyTag objects of album
+        :return path to album cover file
         """
         path = os.path.dirname(tracklist[0]._filehandler.name)
         for track in tracklist:
@@ -64,22 +66,23 @@ class JukeBox(object):
                 count += 1
         if count == 1:
             return cover_file
+        return None
 
     def replace_band(self, tracklist):
         """
         Replaced all music of band to COLLECT_DIR/BAND_TITLE/(albums)
 
-        :param tracklist -  list of TinyTag objects of this band
+        :param tracklist -  list of TinyTag objects of tracks of this band
         """
         albums = {}
-        band_name = tracklist[0].artist
-        band_dir_path = join(
+        artist_title = tracklist[0].artist
+        artist_dir_path = join(
             COLLECT_DIR,
             BAND_PATTERN.format(
-                title=band_name
+                title=artist_title.title()
             )
         )
-        makedir(band_dir_path)
+        makedir(artist_dir_path)
 
         # Separate all tracks to albums
         for track in tracklist:
@@ -90,13 +93,18 @@ class JukeBox(object):
         for album in albums:
             year = albums[album][0].year
             album_dir_path = join(
-                band_dir_path,
-                ALB_PATTERN.format(
+                artist_dir_path,
+                ALBUM_PATTERN.format(
                     year=year,
                     title=album.title()
                 )
             )
+            # Edit folder name if it's EP
+            if album_dir_path.endswith(' Ep'):
+                album_dir_path = album_dir_path[:-3] + ' EP'
             makedir(album_dir_path)
+
+            # Try to find a cover
             album_cover = self.find_album_cover(albums[album])
             if album_cover:
                 cover = join(album_dir_path, 'cover.jpg')
@@ -107,7 +115,7 @@ class JukeBox(object):
                 number = track.track  # TODO: лямбда-выражения
                 track_file_name = TRACK_PATTERN.format(
                     number=number,
-                    title=track.title
+                    title=track.title.title()
                 )
                 if FLAC in track._filehandler.name.upper():
                     track_file_name += '.%s' % FLAC.lower()
@@ -122,7 +130,7 @@ class JukeBox(object):
         """ Remove all the music to COLLECT_DIR/(bands)
         """
         if not self.collection:
-            raise Exception("Can't replace collection\nCollection is empty")
+            raise Exception("Nothing to replace")
         makedir(COLLECT_DIR)
 
         for band in self.collection:
