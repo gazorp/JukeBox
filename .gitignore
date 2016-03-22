@@ -1,7 +1,12 @@
 *.iml
 .idea/
+
+# music files
 *.mp3
 *.flac
 
-# recources for tests
-test_*/
+# resources for tests
+test_*/*
+
+# results of tests
+collection/*
