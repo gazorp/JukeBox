@@ -3,11 +3,12 @@ __author__ = 'gazorp'
 
 import os.path
 import shutil
+import threading
 from tinytag import TinyTag
 
 # TODO: check mutagen
 # TODO: check hsaudiotag
-# TODO: add ignore file patterns
+# TODO: отдельная функция копирования с обработкой символов
 
 FLAC, MP3 = 'FLAC', 'MP3'
 COVERS = (
@@ -18,9 +19,10 @@ ALBUM_PATTERN = '{year} - {title}'
 BAND_PATTERN = '{title}'
 TRACK_PATTERN = '{number} - {title}'
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_DIR = os.path.join(BASE_DIR, 'test_folders')
-COLLECT_DIR = os.path.join(BASE_DIR, 'collection')
+TARGET_DIR = os.path.dirname(os.path.abspath(__file__))
+# TARGET_DIR = r"D:\Big Fuckin' Folder\Разобрать\годнота"
+COLLECT_DIR = os.path.join(os.path.dirname(TARGET_DIR), 'collection')
+
 
 
 class JukeBox(object):
@@ -72,14 +74,14 @@ class JukeBox(object):
         """
         Replaced all music of band to COLLECT_DIR/BAND_TITLE/(albums)
 
-        :param tracklist -  list of TinyTag objects of tracks of this band
+        :param tracklist: list of TinyTag objects of tracks of this band
         """
         albums = {}
         artist_title = tracklist[0].artist
         artist_dir_path = join(
             COLLECT_DIR,
             BAND_PATTERN.format(
-                title=artist_title.title()
+                title=artist_title
             )
         )
         makedir(artist_dir_path)
@@ -96,7 +98,7 @@ class JukeBox(object):
                 artist_dir_path,
                 ALBUM_PATTERN.format(
                     year=year,
-                    title=album.title()
+                    title=album
                 )
             )
             # Edit folder name if it's EP
@@ -127,14 +129,23 @@ class JukeBox(object):
                 shutil.copy2(track._filehandler.name, track_file_path)
 
     def replace_collection(self):
-        """ Remove all the music to COLLECT_DIR/(bands)
+        """
+        Move all the music to COLLECT_DIR/(bands)
         """
         if not self.collection:
             raise Exception("Nothing to replace")
         makedir(COLLECT_DIR)
 
+        all_bands = len(self.collection)
+        count = 0
         for band in self.collection:
+            progress = int(count / all_bands * 20)
+            print('/' * progress, end='')
+            print('%i of %i' % (count, len(self.collection)), end='')
+            print('_' * (20 - progress), '(%s)' % (band, ))
             self.replace_band(self.collection[band])
+            count += 1
+        print('> All bands replaced <')
 
     def run(self):
         self.make_collection()
@@ -156,4 +167,4 @@ def makedir(path):
 if __name__ == '__main__':
     jukebox = JukeBox(TARGET_DIR)
     jukebox.run()
-    input('Finish')
+    print('Finish')
