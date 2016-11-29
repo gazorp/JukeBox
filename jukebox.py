@@ -19,11 +19,6 @@ ALBUM_PATTERN = '{year} - {title}'
 BAND_PATTERN = '{title}'
 TRACK_PATTERN = '{number} - {title}'
 
-TARGET_DIR = os.path.dirname(os.path.abspath(__file__))
-# TARGET_DIR = r"D:\Big Fuckin' Folder\Разобрать\годнота"
-COLLECT_DIR = os.path.join(os.path.dirname(TARGET_DIR), 'collection')
-
-
 
 class JukeBox(object):
 
