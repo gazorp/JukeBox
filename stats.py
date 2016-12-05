@@ -1,48 +1,39 @@
 __author__ = 'gazorp'
 # coding: utf-8
 
-from tinytag import TinyTag
 
+class MusicRepo:
+    tracks = []
 
-class Album:
-    def __init__(self):
-        self.band_title = None
-        self.year = None
-        self.title = None
-        self.genre = None
-        self.cover = {}
-        self.quality = None
-        self.folder = None
+    fields = (
+        'artist', 'albumartist', 'album', 'title',
+        'track', 'duration', 'filesize', 'bitrate',
+        'channels', 'genre', 'samplerate', 'year'
+    )
 
-    def add_track(self, track):
-        pass
+    def from_tinytag(self, tinytag):
+        tag = tinytag.__dict__
+        return {key: tag[key] for key in self.fields}
 
-    def set_cover(self, file, size, type, res):
-        pass
+    def add(self, track):
+        self.tracks.append(track)
 
-    def get_cover_size(self):
-        pass
+    def get_tracks(self):
+        return self.tracks
 
-    def to_json(self):
-        pass
-
-
-class Band:
-    def __init__(self):
-        self.title = None
-        self.albums = []
-        self.folder = None
-
-    def add_album(self, album):
-        pass
-
-    def to_json(self):
-        pass
+    def dump(self):
+        json = dict()
+        json['tracks'] = self.tracks
+        json['total_tracks'] = len(self.tracks)
 
 
 class MusicStats:
-    def __init__(self):
-        self.bands = []
+    MP3, FLAC = (
+        'mp3', 'flac'
+    )
+
+    def __init__(self, repo):
+        self.music_repo = repo
 
     def add_band(self):
         pass
@@ -51,4 +42,7 @@ class MusicStats:
         pass
 
     def create_from_json(self, json_input):
+        pass
+
+    def get_full_stats(self):
         pass
